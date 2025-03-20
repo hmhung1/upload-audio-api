@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "axios": "^1.8.4",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.2",
+    "path": "^0.12.7",
+    "uuid": "^11.1.0"
+  },
+  "name": "upload-audio-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmhung1/upload-audio-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hmhung1/upload-audio-api/issues"
+  },
+  "homepage": "https://github.com/hmhung1/upload-audio-api#readme",
+  "description": ""
+}

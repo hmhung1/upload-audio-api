@@ -1,50 +1,52 @@
-import express from "express";
-import multer from "multer";
-import { v4 as uuidv4 } from "uuid";
-import path from "path";
-import fs from "fs";
+const express = require("express")
+const multer = require("multer");
+const {v4: uuidv4} = require("uuid")
+const path = require("path");
+const fs = require("fs")
 
 const app = express();
 const PORT = 3000;
 
-// Đảm bảo thư mục uploads tồn tại
+function clearUploadsFolder() {
+    fs.readdir(uploadDir, (err, files) => {
+        if (err) {
+            console.error("Lỗi đọc thư mục:", err);
+            return;
+        }
+
+        files.forEach(file => {
+            const filePath = path.join(uploadDir, file);
+            fs.unlink(filePath, err => {
+                if (err) {
+                    console.error(`Lỗi xóa file ${file}:`, err);
+                } else {
+                    console.log(`Đã xóa: ${file}`);
+                }
+            });
+        });
+    });
+}
+
+setInterval(clearUploadsFolder, 10 * 60 * 1000);
+
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Cấu hình Multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, "uploads/");
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        const filename = uuidv4() + ext;
-        cb(null, filename);
+app.post("/upload", express.raw({ type: "audio/*", limit: "20mb" }), (req, res) => {
+    if (!req.body || req.body.length === 0) {
+        return res.status(400).json({ error: "File âm thanh trống hoặc không hợp lệ." });
     }
+
+    const filename = uuidv4() + ".mp3";
+    const filePath = path.join(uploadDir, filename);
+
+    fs.writeFileSync(filePath, req.body);
+
+    res.json({ message: "Tải lên thành công!", filename });
 });
 
-const upload = multer({
-    storage,
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith("audio/")) {
-            cb(null, true);
-        } else {
-            cb(new Error("Chỉ hỗ trợ file âm thanh!"));
-        }
-    }
-});
-
-// API Upload file âm thanh
-app.post("/upload", upload.single("audio"), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: "Vui lòng tải lên một file âm thanh." });
-    }
-    res.json({ message: "Tải lên thành công!", filename: req.file.filename });
-});
-
-// API xem file âm thanh
 app.get("/audio/:filename", (req, res) => {
     const filePath = path.join(uploadDir, req.params.filename);
     if (fs.existsSync(filePath)) {
@@ -55,5 +57,5 @@ app.get("/audio/:filename", (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server đang chạy tại http://localhost:${PORT}`);
+    console.log(`Server đang chạy trên port ${PORT}`);
 });
